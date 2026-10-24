@@ -1,26 +1,471 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ------------------------------------------------------------------
+   LUNAE design tokens — "Sun-up" (Day) & "Moonlight" (Midnight)
+   Source: proposal D5. Every value is a token; components only use
+   semantic names so the whole site swaps palette without reload.
+------------------------------------------------------------------- */
+:root,
+[data-theme="day"] {
+  color-scheme: light;
+  --bg: #fbf6f1; /* Cream */
+  --surface: #fffdfb; /* Pearl */
+  --surface-2: #f1dcd1; /* Blush */
+  --surface-3: #e9d8c6; /* Sand */
+  --ink: #2a1a16; /* Ink */
+  --ink-2: #4a2f27; /* Cocoa */
+  --ink-3: #7a6259;
+  --line: #e7dcd2;
+  --accent: #b8644e; /* Clay */
+  --accent-deep: #9a4b37; /* Clay-deep for small text */
+  --accent-ink: #ffffff;
+  --rose: #d99a86;
+  --gold: #b8925a;
+  --sage: #7d8f6e;
+  --primary: #2a1a16; /* primary button bg */
+  --primary-ink: #fbf6f1;
+  --band: #2a1a16; /* dark bands (announcement, weather) */
+  --band-ink: #fbf6f1;
+  --night: #15131f;
+  --tint-sand: #efe1d3;
+  --tint-blush: #f3dcd5;
+  --tint-sage: #e3e9dd;
+  --tint-cocoa: #ebe0d8;
+  --tint-clay: #f0d6cc;
+  --glass: rgba(255, 253, 251, 0.72);
+  --shadow: 42 26 22;
+}
+
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --bg: #15131f; /* Night */
+  --surface: #221e30; /* Dusk */
+  --surface-2: #2e2940; /* Veil */
+  --surface-3: #2e2940;
+  --ink: #f3ede4; /* Moon */
+  --ink-2: #c9bfd9; /* Halo */
+  --ink-3: #9d93b0;
+  --line: #4a4460; /* Mist */
+  --accent: #e08e6d; /* Ember */
+  --accent-deep: #e9a183;
+  --accent-ink: #15131f;
+  --rose: #e08e6d;
+  --gold: #d9b77e; /* Glow */
+  --sage: #9db08e;
+  --primary: #f3ede4;
+  --primary-ink: #15131f;
+  --band: #0f0d17;
+  --band-ink: #f3ede4;
+  --night: #0f0d17;
+  --tint-sand: #221e30;
+  --tint-blush: #221e30;
+  --tint-sage: #221e30;
+  --tint-cocoa: #221e30;
+  --tint-clay: #221e30;
+  --glass: rgba(34, 30, 48, 0.72);
+  --shadow: 0 0 0;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-ink: var(--accent-ink);
+  --color-rose: var(--rose);
+  --color-gold: var(--gold);
+  --color-sage: var(--sage);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-band: var(--band);
+  --color-band-ink: var(--band-ink);
+  --color-night: var(--night);
+  --color-tint-sand: var(--tint-sand);
+  --color-tint-blush: var(--tint-blush);
+  --color-tint-sage: var(--tint-sage);
+  --color-tint-cocoa: var(--tint-cocoa);
+  --color-tint-clay: var(--tint-clay);
+  --color-glass: var(--glass);
+
+  /* fixed palette (both modes) */
+  --color-cocoa-ink: #2a1a16;
+  --color-cream: #fbf6f1;
+  --color-moon: #f3ede4;
+  --color-ember: #e08e6d;
+  --color-dusk: #221e30;
+  --color-veil: #2e2940;
+  --color-mist: #4a4460;
+  --color-halo: #c9bfd9;
+  --color-glow: #d9b77e;
+  --color-success: #5e7f55;
+  --color-warning: #c8892e;
+  --color-error: #b4433c;
+  --color-info: #5b6e8c;
+
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-serif: "Lora", Georgia, serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-xs: 2px;
+  --radius-sm: 6px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+
+  --ease-lunar: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --shadow-e1: 0 1px 2px rgb(var(--shadow) / 0.06);
+  --shadow-e2: 0 8px 30px rgb(var(--shadow) / 0.1);
+  --shadow-e3: 0 24px 60px rgb(var(--shadow) / 0.16);
+
+  --breakpoint-xs: 360px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 96px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.625;
+  transition:
+    background-color 600ms var(--ease-lunar),
+    color 600ms var(--ease-lunar);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--rose);
+  color: var(--ink);
+}
+
+/* Visible keyboard focus everywhere (WCAG 2.4.11) */
+:focus-visible {
+  outline: 1.5px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ---------- typography helpers ---------- */
+@utility display-xl {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(3rem, 6.4vw, 6rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+@utility display-l {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.5rem, 4.6vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+@utility heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+}
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+@utility product-name {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.15;
+}
+@utility container-lux {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  @media (width >= 600px) {
+    padding-inline: 24px;
+  }
+  @media (width >= 1024px) {
+    padding-inline: 40px;
+  }
+  @media (width >= 1280px) {
+    padding-inline: 60px;
+  }
+}
+
+/* ---------- buttons ---------- */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0 1.75rem;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition:
+    transform 120ms var(--ease-lunar),
+    background-color 240ms var(--ease-lunar),
+    color 240ms var(--ease-lunar),
+    border-color 240ms var(--ease-lunar),
+    opacity 240ms;
+  white-space: nowrap;
+  &:active {
+    transform: scale(0.98);
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+@utility btn-primary {
+  background: var(--primary);
+  color: var(--primary-ink);
+  &:hover {
+    background: color-mix(in oklab, var(--primary) 86%, var(--accent));
+  }
+}
+@utility btn-accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+  &:hover {
+    background: color-mix(in oklab, var(--accent) 88%, black);
+  }
+}
+@utility btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  &:hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+}
+@utility btn-ghost {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  &:hover {
+    border-color: var(--ink);
+  }
+}
+@utility btn-sm {
+  min-height: 38px;
+  padding: 0 1.1rem;
+  font-size: 12px;
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 120ms var(--ease-lunar);
+  &:hover {
+    border-color: var(--ink);
+  }
+  &[aria-pressed="true"],
+  &[aria-selected="true"],
+  &[data-active="true"] {
+    background: var(--primary);
+    color: var(--primary-ink);
+    border-color: var(--primary);
+  }
+}
+
+@utility badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@utility card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+@utility field {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0.75rem 1rem;
+  font-size: 15px;
+  transition: border-color 120ms;
+  &:focus {
+    border-color: var(--ink);
+    outline: none;
+  }
+  &[aria-invalid="true"] {
+    border-color: #b4433c;
+  }
+  &::placeholder {
+    color: var(--ink-3);
+  }
+}
+
+@utility link {
+  color: var(--accent-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  &:hover {
+    color: var(--ink);
+  }
+}
+
+/* ---------- motion ---------- */
+@keyframes moonrise {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(224 142 109 / 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(224 142 109 / 0);
+  }
+}
+
+@utility animate-moonrise {
+  animation: moonrise 1200ms var(--ease-lunar) both;
+}
+@utility animate-fade-up {
+  animation: fade-up 600ms var(--ease-lunar) both;
+}
+@utility skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+  border-radius: 14px;
+}
+
+/* scroll-driven reveal — no JS needed */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: fade-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+
+/* starfield used on Midnight bands */
+.starfield {
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(243, 237, 228, 0.7), transparent 60%), radial-gradient(1px 1px at 32% 68%, rgba(243, 237, 228, 0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 54% 14%, rgba(243, 237, 228, 0.8), transparent 60%), radial-gradient(1px 1px at 71% 42%, rgba(243, 237, 228, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 84% 78%, rgba(243, 237, 228, 0.6), transparent 60%), radial-gradient(1.5px 1.5px at 92% 18%, rgba(243, 237, 228, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 6% 86%, rgba(243, 237, 228, 0.5), transparent 60%), radial-gradient(1px 1px at 44% 92%, rgba(243, 237, 228, 0.4), transparent 60%),
+    radial-gradient(1px 1px at 63% 58%, rgba(243, 237, 228, 0.6), transparent 60%), radial-gradient(1px 1px at 24% 46%, rgba(243, 237, 228, 0.4), transparent 60%);
+}
+
+/* View-transition for theme switch */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 900ms;
+  animation-timing-function: var(--ease-lunar);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    animation: none !important;
+  }
+}
+
+/* Day / Midnight content variants — same HTML, swapped by tokens (no SEO duplicate) */
+.night-only {
+  display: none !important;
+}
+[data-theme="midnight"] .night-only {
+  display: revert !important;
+}
+[data-theme="midnight"] .day-only {
+  display: none !important;
 }

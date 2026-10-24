@@ -1,0 +1,18 @@
+export const ADMIN_LINKS = [
+  { href: "/admin", l: "Command centre" },
+  { href: "/admin/orders", l: "Orders" },
+  { href: "/admin/products", l: "Products & shades" },
+  { href: "/admin/inventory", l: "Inventory & batches" },
+  { href: "/admin/customers", l: "Customers" },
+  { href: "/admin/promotions", l: "Promotions & drops" },
+  { href: "/admin/loyalty", l: "Lunae Circle" },
+  { href: "/admin/content", l: "Content (CMS)" },
+  { href: "/admin/live", l: "Live & video" },
+  { href: "/admin/advisor", l: "Advisor console" },
+  { href: "/admin/inbox", l: "CS inbox" },
+  { href: "/admin/partners", l: "Partners" },
+  { href: "/admin/finance", l: "Finance" },
+  { href: "/admin/reports", l: "Reports" },
+  { href: "/admin/fulfilment", l: "Fulfilment" },
+  { href: "/admin/settings", l: "Settings & audit" },
+];
