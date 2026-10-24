@@ -46,7 +46,7 @@ export function ThemeSwitch({ compact = false }: { compact?: boolean }) {
         <Moon className="h-[18px] w-[18px]" strokeWidth={1.5} />
       )}
       {!compact && (
-        <span className="hidden xl:inline" suppressHydrationWarning>
+        <span className="hidden whitespace-nowrap 2xl:inline" suppressHydrationWarning>
           {label}
         </span>
       )}
@@ -155,13 +155,13 @@ export function Header() {
           <Logo />
         </L>
         <nav aria-label={t(tx("Main", "Utama"))} className="mx-auto hidden lg:block">
-          <ul className="flex items-center gap-5 xl:gap-7">
+          <ul className="flex items-center gap-4 xl:gap-6">
             {NAV.map((n) => (
               <li key={n.href} onMouseEnter={() => setMega(!!n.mega)}>
                 <L
                   href={n.href}
                   aria-current={isActive(n.href) ? "page" : undefined}
-                  className={`text-ink hover:text-accent-deep relative py-2 text-[14.5px] transition ${isActive(n.href) ? "after:bg-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px" : ""}`}
+                  className={`text-ink hover:text-accent-deep relative py-2 text-[14px] whitespace-nowrap transition xl:text-[14.5px] ${isActive(n.href) ? "after:bg-ink after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px" : ""}`}
                 >
                   {t(n.label)}
                 </L>

@@ -98,7 +98,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
                   <span className="text-ink-3 block text-[12px]">{T(tx("Thermal-camera wear test, 8 hours*", "Ujian kamera terma, 8 jam*"))}</span>
                 </span>
               </div>
-              <Link href={H("/shade-finder")} className="bg-glass absolute right-0 bottom-0 rounded-[14px] px-4 py-3 shadow-[var(--shadow-e2)] backdrop-blur-[14px] sm:right-[4%]">
+              <Link href={H("/shade-finder")} className="bg-glass absolute right-0 bottom-0 hidden rounded-[14px] px-4 py-3 shadow-[var(--shadow-e2)] backdrop-blur-[14px] sm:right-[4%] sm:block">
                 <span className="eyebrow text-sage">{T(tx("AI shade match", "Padanan rona AI"))}</span>
                 <span className="mt-1.5 flex items-center gap-2 text-[14px] font-semibold">
                   <span className="h-5 w-5 rounded-full bg-[#D09A6C]" /> {T(tx("Find yours in 60 s", "Cari dalam 60 saat"))}
