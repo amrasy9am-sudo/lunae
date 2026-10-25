@@ -27,7 +27,10 @@ export function AdvisorPanel({ embedded = false }: { embedded?: boolean }) {
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
 
-  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth", block: "end" }), [msgs, busy]);
+  // Braces matter: newer Chromium returns a Promise from scrollIntoView, and React would call it as a cleanup.
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [msgs, busy]);
 
   const send = async (text: string) => {
     if (!text.trim() || busy) return;

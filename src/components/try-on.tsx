@@ -73,7 +73,9 @@ export function TryOn() {
   const cart = useCart();
   const ui = useUI();
 
-  useEffect(() => setShade(p.shades[0]), [p]);
+  useEffect(() => {
+    setShade(p.shades[0]);
+  }, [p]);
   useEffect(() => () => stream.current?.getTracks().forEach((x) => x.stop()), []);
 
   const renderPhoto = () => {
