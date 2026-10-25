@@ -1,4 +1,5 @@
-import { products, sets } from "@/data/catalogue";
+import { categories, products, sets } from "@/data/catalogue";
+import { searchProducts } from "./search";
 import { glossary } from "@/data/formulas";
 import type { Locale } from "./types";
 
@@ -14,6 +15,8 @@ export interface AdvisorReply {
 export interface AdvisorContext {
   lastOrder?: { no: string; status: string; eta: string; courier: string } | null;
   profile?: { shade: string; code: string; undertone: string } | null;
+  /** How many messages the customer has sent so far (1 = first). Used to vary the fallback. */
+  turn?: number;
 }
 
 const has = (s: string, words: string[]) => words.some((w) => new RegExp(`(^|[^\\p{L}])${w}`, "iu").test(s));
@@ -21,7 +24,48 @@ const has = (s: string, words: string[]) => words.some((w) => new RegExp(`(^|[^\
 /** Rule-based concierge over the LUNAE catalogue, INCI glossary & policies. Guardrails: no medical claims, hands off when unsure. */
 export function ruleAdvisor(raw: string, lang: Locale, ctx: AdvisorContext = {}): AdvisorReply {
   const q = raw.toLowerCase();
-  const ms = lang === "ms" || has(q, ["saya", "nak", "boleh", "tak", "apa", "macam", "mana", "ke ", "kan", "tolong", "untuk", "esok", "panas"]);
+  // Reply in BM when the page is in BM, or when the customer writes in BM / Manglish on the EN page.
+  const BM_WORDS = [
+    "saya",
+    "aku",
+    "nak",
+    "boleh",
+    "tak",
+    "apa",
+    "macam",
+    "mana",
+    "camne",
+    "camana",
+    "kan",
+    "tolong",
+    "untuk",
+    "esok",
+    "panas",
+    "harga",
+    "berapa",
+    "bayar",
+    "bayaran",
+    "ada",
+    "kat",
+    "dekat",
+    "murah",
+    "mahal",
+    "kulit",
+    "bila",
+    "barang",
+    "beli",
+    "brp",
+    "sy",
+    "awak",
+    "kenapa",
+    "bagi",
+    "cari",
+    "jual",
+    "dengan",
+    "ni",
+    "tu",
+  ];
+  const ms = lang === "ms" || BM_WORDS.some((w) => has(q, [`${w}(?![\\p{L}])`]));
   const L = (en: string, m: string) => (ms ? m : en);
   const r: AdvisorReply = { text: "", products: [], sources: [], engine: "rules" };
 
@@ -71,6 +115,16 @@ export function ruleAdvisor(raw: string, lang: Locale, ctx: AdvisorContext = {})
     return r;
   }
 
+  // 2b. Batch trace & authenticity
+  if (has(q, ["batch", "kelompok", "qr", "trace", "luput", "expir", "palsu", "fake", "original", "ori\\b", "tulen", "authentic"])) {
+    r.text = L(
+      "Every LUNAE pack has a QR code and batch number. Scan it, or type the batch number on our trace page, to see where and when it was made, its expiry date, lab results and halal certificate — and to check it's genuine. Only buy from LUNAE or listed stockists.",
+      "Setiap pek LUNAE ada kod QR dan nombor kelompok. Imbas, atau taip nombor kelompok di halaman jejak kami, untuk lihat bila dan di mana ia dibuat, tarikh luput, keputusan makmal dan sijil halal — serta pastikan ia tulen. Beli hanya daripada LUNAE atau stokis berdaftar.",
+    );
+    r.sources.push({ label: L("Batch & halal trace", "Jejak kelompok & halal"), href: "/trace" }, { label: L("Stockists", "Stokis"), href: "/stockists" });
+    return r;
+  }
+
   // 3. Halal
   if (has(q, ["halal", "jakim", "babi", "pork", "alkohol", "alcohol", "khinzir", "gelatin", "wudhu", "wuduk"])) {
     r.text = L(
@@ -78,6 +132,52 @@ export function ruleAdvisor(raw: string, lang: Locale, ctx: AdvisorContext = {})
       "Setiap formula LUNAE dibangunkan mengikut MS 2634:2019 (kosmetik halal): tiada ramuan haiwan, tiada karmin atau lilin lebah, gliserin daripada tumbuhan dengan sijil pembekal, dan tiada etanol daripada minuman beralkohol. Pensijilan JAKIM dimohon sebelum pelancaran, dan setiap halaman kelompok akan tunjuk sijil sebaik dikeluarkan.",
     );
     r.sources.push({ label: L("Our halal promise", "Janji halal kami"), href: "/halal" }, { label: L("Batch & halal check", "Semakan kelompok"), href: "/trace" });
+    return r;
+  }
+
+  // 4a. Payment
+  if (
+    has(q, [
+      "bayar",
+      "pay",
+      "payment",
+      "pembayaran",
+      "fpx",
+      "online banking",
+      "perbankan",
+      "kad",
+      "card",
+      "kredit",
+      "credit",
+      "debit",
+      "duitnow",
+      "e-?wallet",
+      "ewallet",
+      "tng",
+      "touch ?'?n ?go",
+      "grabpay",
+      "shopeepay",
+      "atome",
+      "ansuran",
+      "instal",
+      "bnpl",
+      "cod",
+      "cash on",
+      "tunai",
+    ])
+  ) {
+    if (has(q, ["cod", "cash on", "tunai", "bayar masa sampai", "bayar bila sampai"])) {
+      r.text = L(
+        "Cash on delivery isn't available — every order is paid online at checkout, so it can ship the same day. You can use FPX online banking, a debit/credit card, DuitNow QR, e-wallets (Touch 'n Go, GrabPay, ShopeePay) or Atome to split it into 3 payments.",
+        "Bayar tunai semasa terima (COD) tak disediakan — semua pesanan dibayar online semasa checkout supaya boleh dihantar hari yang sama. Anda boleh guna FPX (perbankan online), kad debit/kredit, DuitNow QR, e-dompet (Touch 'n Go, GrabPay, ShopeePay) atau Atome untuk bayar 3 kali.",
+      );
+    } else {
+      r.text = L(
+        "At checkout you can pay with FPX online banking (all major Malaysian banks), a debit or credit card (3-D Secure), DuitNow QR, e-wallets — Touch 'n Go, GrabPay, ShopeePay — or Atome to split it into 3 interest-free payments. Prices include SST and are confirmed on our server before you pay. Note: this preview runs checkout in demo mode, so no money is taken yet.",
+        "Semasa checkout, anda boleh bayar guna FPX (perbankan online, semua bank utama Malaysia), kad debit atau kredit (3-D Secure), DuitNow QR, e-dompet — Touch 'n Go, GrabPay, ShopeePay — atau Atome untuk bayar 3 kali tanpa faedah. Harga termasuk SST dan disahkan oleh pelayan kami sebelum anda bayar. Nota: laman pratonton ini guna checkout mod demo, jadi belum ada duit ditolak.",
+      );
+    }
+    r.sources.push({ label: L("Go to checkout", "Ke checkout"), href: "/checkout" }, { label: L("Help centre", "Pusat bantuan"), href: "/help" });
     return r;
   }
 
@@ -112,6 +212,46 @@ export function ruleAdvisor(raw: string, lang: Locale, ctx: AdvisorContext = {})
       "Gelombang 1 (10 produk) dilancarkan sempena Merdeka, Ogos 2027; Gelombang 2 (6 lagi) menyusul awal 2028, sebelum Raya. Sertai senarai menunggu Full Moon Drop untuk akses awal.",
     );
     r.sources.push({ label: "Full Moon Drops", href: "/drops" });
+    return r;
+  }
+
+  // 4b. Price / browse by category
+  const CAT_WORDS: Record<string, string[]> = {
+    face: ["face", "muka", "base", "foundation", "cushion", "concealer", "bedak", "powder", "alas"],
+    "lips-cheeks": ["lip", "lips", "bibir", "gincu", "lipstick", "lipstik", "cheek", "pipi", "blush", "pemerah"],
+    eyes: ["eye", "eyes", "mata", "mascara", "maskara", "liner", "celak", "brow", "kening"],
+    skincare: ["skincare", "skin care", "penjagaan", "serum", "cleanser", "pencuci", "moisturi[sz]er", "pelembap", "spf", "sunscreen", "sunblock", "pelindung"],
+  };
+  const namesProduct = products.some((p) => q.includes(p.shortName.toLowerCase()));
+  const cat = namesProduct ? undefined : categories.find((c) => has(q, CAT_WORDS[c.key] ?? []));
+  const askPrice = has(q, ["harga", "price", "berapa", "brp", "how much", "cost", "kos", "mahal", "murah", "rm ?\\d", "bajet", "budget"]);
+  const askList = has(q, ["ada apa", "what do you", "senarai", "list", "produk", "product", "jual", "sell", "range", "koleksi", "collection"]);
+  if (cat && (askPrice || askList || q.trim().split(/\s+/).length <= 2)) {
+    const ps = products.filter((p) => p.category === cat.key).sort((a, b) => a.price - b.price);
+    const lo = ps[0].price;
+    const hi = ps[ps.length - 1].price;
+    const list = ps.map((p) => `${p.shortName} RM${p.price}`).join(", ");
+    r.text = L(
+      `${cat.name.en} at LUNAE runs from RM${lo} to RM${hi}: ${list}. Buy 3 or more as a routine and you save 10% automatically (12% for 4+), and delivery is free over RM80.`,
+      `${cat.name.ms} LUNAE berharga antara RM${lo} hingga RM${hi}: ${list}. Beli 3 atau lebih sebagai rutin dan anda jimat 10% secara automatik (12% untuk 4+), dan penghantaran percuma melebihi RM80.`,
+    );
+    r.products = ps.slice(0, 4).map((p) => p.slug);
+    r.sources.push({ label: L(`Shop ${cat.name.en}`, `Beli ${cat.name.ms}`), href: `/shop/${cat.key}` });
+    return r;
+  }
+  if (askPrice && !namesProduct) {
+    const all = [...products].sort((a, b) => a.price - b.price);
+    const rows = categories
+      .map((c) => {
+        const ps = products.filter((p) => p.category === c.key).map((p) => p.price);
+        return `${L(c.name.en, c.name.ms)} RM${Math.min(...ps)}–${Math.max(...ps)}`;
+      })
+      .join(" · ");
+    r.text = L(
+      `Prices range from RM${all[0].price} to RM${all[all.length - 1].price}, all including SST: ${rows}. Ready routine sets save 10–15%. Tell me which product or category and I'll give you the exact price.`,
+      `Harga dari RM${all[0].price} hingga RM${all[all.length - 1].price}, semua termasuk SST: ${rows}. Set rutin siap jimat 10–15%. Beritahu produk atau kategori mana, saya bagi harga tepat.`,
+    );
+    r.sources.push({ label: L("Shop all", "Lihat semua"), href: "/shop" }, { label: L("Sets & gifts", "Set & hadiah"), href: "/sets" });
     return r;
   }
 
@@ -155,6 +295,14 @@ export function ruleAdvisor(raw: string, lang: Locale, ctx: AdvisorContext = {})
     );
     r.products = ["daybreak-sun-gel", "eclipse-cushion", "nightbloom-lip-cheek-tint", "tide-setting-mist"];
     r.addSet = r.products;
+    return r;
+  }
+  if (has(q, ["kusam", "dull", "cerah", "brighten", "bright", "glowing", "gebu", "seri", "berseri", "parut", "dark spot", "jeragat", "tompok"])) {
+    r.text = L(
+      "For dull skin or uneven tone: Full Moon Glow Serum (5% niacinamide with pegaga) morning and night, Daybreak SPF50+ every morning so marks don't darken, and a touch of Moonglow on the high points for instant glow. Give the serum 4–8 weeks to show.",
+      "Untuk kulit kusam atau tona tak sekata: Full Moon Glow Serum (5% niacinamide dengan pegaga) pagi dan malam, Daybreak SPF50+ setiap pagi supaya kesan tak makin gelap, dan sedikit Moonglow pada tulang pipi untuk seri segera. Beri serum 4–8 minggu untuk nampak hasil.",
+    );
+    r.products = ["full-moon-glow-serum", "daybreak-sun-gel", "moonglow-liquid-highlighter"];
     return r;
   }
   if (has(q, ["oily", "minyak", "berminyak", "shine", "kilat", "pori", "pore"])) {
@@ -213,10 +361,30 @@ export function ruleAdvisor(raw: string, lang: Locale, ctx: AdvisorContext = {})
     return r;
   }
 
+  // 9. Free-text product search before giving up.
+  const found = searchProducts(raw).slice(0, 3);
+  if (found.length) {
+    r.text = L(
+      `These look closest to what you're after: ${found.map((p) => `${p.name} (RM${p.price})`).join(", ")}. Want me to compare them or build a routine around one?`,
+      `Ini yang paling hampir dengan apa yang anda cari: ${found.map((p) => `${p.name} (RM${p.price})`).join(", ")}. Nak saya bandingkan atau bina rutin dengan salah satu?`,
+    );
+    r.products = found.map((p) => p.slug);
+    return r;
+  }
+
+  // 10. Fallback — introduce once, then admit we didn't understand and offer a human.
+  if ((ctx.turn ?? 1) <= 1 && has(q, ["hi", "hai", "hello", "helo", "hey", "salam", "assalamualaikum", "selamat", "yo"])) {
+    r.text = L(
+      "Hi! I'm the Lunae Advisor — I can match your shade, build a routine for the weather, explain any ingredient, check halal details, prices, payment or delivery, or find your order. What are you getting ready for?",
+      "Hai! Saya Lunae Advisor — saya boleh padankan rona, bina rutin ikut cuaca, terangkan ramuan, semak halal, harga, bayaran atau penghantaran, atau cari pesanan anda. Nak bersiap untuk apa?",
+    );
+    return r;
+  }
   r.text = L(
-    "I'm the Lunae Advisor — I can match your shade, build a routine for the weather, explain any ingredient, check halal details or find your order. What are you getting ready for?",
-    "Saya Lunae Advisor — saya boleh padankan rona, bina rutin ikut cuaca, terangkan mana-mana ramuan, semak butiran halal atau cari pesanan anda. Nak bersiap untuk apa?",
+    "Sorry, I'm not sure I understood that one. You can ask me about prices, payment, delivery, returns, halal, ingredients, your shade or a routine for an occasion — or I can pass you to our care team on WhatsApp.",
+    "Maaf, saya kurang faham soalan tu. Anda boleh tanya tentang harga, bayaran, penghantaran, pemulangan, halal, ramuan, rona kulit atau rutin untuk sesuatu majlis — atau saya sambungkan dengan pasukan kami di WhatsApp.",
   );
+  r.handoff = (ctx.turn ?? 1) > 2;
   return r;
 }
 
@@ -231,7 +399,8 @@ export function advisorSystemPrompt(lang: Locale) {
 Reply in ${lang === "ms" ? "relaxed, warm Bahasa Melayu (Manglish is fine if the customer uses it)" : "warm, concise English"}; 2–4 sentences; like a big sister who's great at makeup.
 Answer ONLY from the catalogue and policies below. If unsure, say so and offer the human care team.
 Guardrails: never give medical advice or diagnose skin conditions; for reactions tell them to stop use and hand off to a human; claims marked * are pending testing — present them as targets; never invent prices, shades or certificates. JAKIM halal certification and NPRA notification are being applied for before launch (Wave 1: August 2027, Wave 2: early 2028).
-Policies: free delivery over RM80 (Peninsular), 1–3 working days; Sabah/Sarawak 3–7; Shade-Match Guarantee one free swap in 30 days; unopened returns 14 days; Lunae Circle 1 point per RM1, 100 points = RM1, tiers Sabit / Separa (RM300/yr, 1.25×) / Purnama (RM800/yr, 1.5×); routine sets save 10–15%.
+Policies: free delivery over RM80 (Peninsular), 1–3 working days; Sabah/Sarawak 3–7; Shade-Match Guarantee one free swap in 30 days; unopened returns 14 days; Lunae Circle 1 point per RM1, 100 points = RM1, tiers Sabit / Separa (RM300/yr, 1.25×) / Purnama (RM800/yr, 1.5×); routine sets save 10–15%; buying 3+ items as a routine saves 10% (4+ saves 12%).
+Payment: FPX online banking, debit/credit card (3-D Secure), DuitNow QR, e-wallets (Touch 'n Go, GrabPay, ShopeePay), Atome (3 interest-free payments); no cash on delivery. The preview site runs checkout in demo mode — no money is taken yet.
 Catalogue:
 ${catalogue}
 When you recommend products, mention them by their exact product name.`;

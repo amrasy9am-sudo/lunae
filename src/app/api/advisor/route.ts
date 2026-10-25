@@ -32,7 +32,8 @@ export async function POST(req: Request) {
   const { messages, lang, context } = parsed.data;
   const last = messages[messages.length - 1].content;
 
-  const rules = ruleAdvisor(last, lang, context ?? {});
+  const turn = messages.filter((m) => m.role === "user").length;
+  const rules = ruleAdvisor(last, lang, { ...(context ?? {}), turn });
   // Safety & account intents always use the deterministic path.
   if (rules.handoff || !process.env.ANTHROPIC_API_KEY) return NextResponse.json(rules);
 
