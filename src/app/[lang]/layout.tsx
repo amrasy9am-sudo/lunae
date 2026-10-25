@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
       : "Halal makeup & skincare engineered for tropical weather. Tested at 33°C, 80% humidity. Shades for every Southeast Asian skin tone.",
     applicationName: "LUNAE",
     alternates: { languages: { en: "/en", ms: "/ms" } },
-    openGraph: { siteName: "LUNAE", type: "website", locale: ms ? "ms_MY" : "en_MY", images: ["/img/collections/semua-16-produk.webp"] },
+    openGraph: { siteName: "LUNAE", type: "website", locale: ms ? "ms_MY" : "en_MY" },
     icons: { icon: "/icon.svg" },
   };
 }
