@@ -41,7 +41,6 @@ export interface Product {
 
 export interface FormulaIngredient {
   inci: string;
-  pct: string;
   fn: string;
   key: string;
 }

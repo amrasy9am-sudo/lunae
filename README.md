@@ -69,4 +69,4 @@ src/
   lib/                      i18n, pricing, colour science, astronomy, weather, store
 ```
 
-© 2026 LUNAE. All rights reserved.
+© 2026 Mohamad Amirul Asyraf. All rights reserved. Source shared for portfolio viewing only; not licensed for reuse. See [LICENSE](LICENSE). The LUNAE name, brand assets and business material are also proprietary.

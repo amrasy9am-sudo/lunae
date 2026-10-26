@@ -27,10 +27,7 @@ export function IngredientExplorer({ f }: { f: Formula }) {
       {cur && h && (
         <div className="border-line bg-surface mt-4 rounded-[14px] border p-4 text-[14.5px] leading-relaxed" aria-live="polite">
           <p>
-            <strong>
-              {cur.inci} · {cur.pct}
-            </strong>{" "}
-            — {t(fnL(cur.fn)).toLowerCase()}. <span className={h.tone === "ok" ? "text-sage" : "text-warning"}>● {t(h.status)}</span>
+            <strong>{cur.inci}</strong> — {t(fnL(cur.fn)).toLowerCase()}. <span className={h.tone === "ok" ? "text-sage" : "text-warning"}>● {t(h.status)}</span>
           </p>
           <L href={`/ingredients/${cur.key}`} className="link mt-2 inline-block text-[13px]">
             {t(tx("More in the ingredients glossary", "Lagi dalam glosari ramuan"))}
@@ -40,8 +37,8 @@ export function IngredientExplorer({ f }: { f: Formula }) {
       <p className="text-ink-3 mt-3 text-[12px]">
         {t(
           tx(
-            "Indicative percentages from the formulation brief; final values set after ODM safety assessment.",
-            "Peratusan indikatif daripada ringkasan formulasi; nilai akhir ditetapkan selepas penilaian keselamatan ODM.",
+            "Ingredient list from the formulation brief; the final INCI list is confirmed after the ODM safety assessment.",
+            "Senarai ramuan daripada ringkasan formulasi; senarai INCI akhir disahkan selepas penilaian keselamatan ODM.",
           ),
         )}
       </p>
